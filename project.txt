@@ -1,0 +1,188 @@
+Job Prediction and Analysis System
+1. Introduction
+This project focuses on an AI-powered job prediction and analysis system where:
+• Job seekers can create profiles and apply for jobs.
+• Employers can post job listings.
+• Machine Learning predicts a candidate’s likelihood of getting hired.
+• Sentiment analysis evaluates employer and job seeker reviews.
+• A simple website interface enables interaction.
+2. Objectives
+1. Database Development
+o Store user profiles, job postings, applications, and reviews.
+2. Website Development
+o Develop a Flask & Bootstrap-based user-friendly platform.
+3. Machine Learning Integration
+o Job Success Prediction: Predicts a candidate’s hiring probability.
+o Sentiment Analysis: Detects positive or negative feedback.
+3. System Architecture
+3.1 Overview
+The system follows a three-tier architecture:
+1. Frontend (Client-Side) – HTML, CSS, JavaScript (Bootstrap).
+2. Backend (Server-Side) – Python Flask.
+3. Database – MySQL (or SQLite for testing).
+3.2 Tech Stack
+Component Technology
+Frontend HTML, CSS, JavaScript, Bootstrap
+Backend Flask (Python)
+Database MySQL / SQLite
+ML Models Scikit-Learn, NLP (TF-IDF, Naive Bayes)
+Deployment Render / Vercel / Replit
+4. Database Design
+4.1 Entity-Relationship Diagram (ERD)
+The system consists of five key tables:
+1. Users – Stores job seekers & employer details.
+2. Jobs – Stores job postings.
+3. Applications – Tracks job applications.
+4. Transactions – Manages salary payments.
+5. Reviews – Stores employer/employee feedback.
+4.2 Table Definitions
+Users Table
+CREATE TABLE Users (
+ user_id INT PRIMARY KEY AUTO_INCREMENT,
+ name VARCHAR(100),
+ email VARCHAR(100) UNIQUE,
+ password_hash VARCHAR(255),
+ user_type ENUM('job_seeker', 'employer'),
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+Jobs Table
+CREATE TABLE Jobs (
+ job_id INT PRIMARY KEY AUTO_INCREMENT,
+ employer_id INT,
+ title VARCHAR(255),
+ description TEXT,
+ salary DECIMAL(10,2),
+ deadline DATE,
+ status ENUM('open', 'closed', 'hiring', 'cancelled'),
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY (employer_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+Applications Table
+CREATE TABLE Applications (
+ application_id INT PRIMARY KEY AUTO_INCREMENT,
+ job_id INT,
+ job_seeker_id INT,
+ application_status ENUM('pending', 'accepted', 'rejected'),
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY (job_id) REFERENCES Jobs(job_id) ON DELETE CASCADE,
+ FOREIGN KEY (job_seeker_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+Transactions Table
+CREATE TABLE Transactions (
+ transaction_id INT PRIMARY KEY AUTO_INCREMENT,
+ job_id INT,
+ employer_id INT,
+ job_seeker_id INT,
+ salary DECIMAL(10,2),
+ payment_status ENUM('pending', 'completed', 'failed'),
+ payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY (job_id) REFERENCES Jobs(job_id) ON DELETE CASCADE,
+ FOREIGN KEY (employer_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+ FOREIGN KEY (job_seeker_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+Reviews Table
+CREATE TABLE Reviews (
+ review_id INT PRIMARY KEY AUTO_INCREMENT,
+ job_id INT,
+ reviewer_id INT,
+ reviewee_id INT,
+ rating INT CHECK (rating BETWEEN 1 AND 5),
+ review_text TEXT,
+ review_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY (job_id) REFERENCES Jobs(job_id) ON DELETE CASCADE,
+ FOREIGN KEY (reviewer_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+ FOREIGN KEY (reviewee_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+5. Machine Learning Integration
+5.1 Job Success Prediction
+Objective: Predict whether a job seeker will be hired based on past applications, 
+skills, and employer demand.
+Dataset Schema
+Job Seeker 
+ID
+Avg Salary 
+Expectation
+Rating
+Jobs 
+Applied
+Jobs 
+Hired
+Success 
+(Yes/No)
+101 50000 4.8 20 10 Yes
+102 30000 3.5 15 2 No
+ML Model
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+# Load data
+df = pd.read_sql("SELECT salary_expectation, rating, jobs_applied, jobs_hired, success 
+FROM JobSeekersData;", connection)
+# Prepare features and target
+X = df[['salary_expectation', 'rating', 'jobs_applied', 'jobs_hired']]
+y = df['success']
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Train model
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+# Predict & evaluate
+y_pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+5.2 Sentiment Analysis
+Objective: Classify employer/job seeker reviews as positive or negative.
+ML Model
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+# Load dataset
+df = pd.read_sql("SELECT review_text, rating FROM Reviews;", connection)
+# Convert rating into positive/negative
+df['sentiment'] = df['rating'].apply(lambda x: 'positive' if x > 3 else 'negative')
+# Transform text data
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(df['review_text'])
+y = df['sentiment']
+# Train model
+model = MultinomialNB()
+model.fit(X, y)
+# Predict sentiment for new reviews
+new_reviews = ["Great job opportunity!", "Worst employer ever."]
+new_reviews_transformed = vectorizer.transform(new_reviews)
+predictions = model.predict(new_reviews_transformed)
+print(predictions) # Output: ['positive', 'negative']
+6. Website Development
+Tech Stack: Flask, HTML, CSS, Bootstrap
+Features:
+• Homepage
+• User Registration/Login
+• Job Posting & Applications
+• ML Integration via API
+• Transaction Processing (Mock)
+6.1 Basic Flask App
+from flask import Flask, render_template, request
+import sqlite3
+app = Flask(__name__)
+@app.route('/')
+def index():
+ return render_template('index.html')
+@app.route('/jobs')
+def jobs():
+ return "List of Jobs Here"
+if __name__ == "__main__":
+ app.run(debug=True)
+7. Conclusion & Future Enhancements
+✔ Structured database
+✔ Web platform for job seekers & employers
+✔ ML models for hiring prediction & sentiment analysis
+Future Enhancements
+• Job Recommendation System
+• Payment Gateway Integration
+• Fraud Detection using AI
+• Full User Dashboard
+
+Implement the ML models as defined in your project.txt
+Add the review system as it's a core feature
+Enhance the job matching system with ML predictions
+Add proper security measures
+Implement the transaction system

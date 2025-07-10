@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Error{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="card-title text-danger mb-4">Oops! Something went wrong</h2>
+                    <p class="card-text">{{ error_message }}</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">Return to Home</a>
+                        {% if retry_url %}
+                        <a href="{{ retry_url }}" class="btn btn-outline-primary ml-2">Try Again</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

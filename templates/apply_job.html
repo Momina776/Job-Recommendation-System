@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Apply for: {{ job.title }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="job-details mb-4">
+                        <h5>Job Details</h5>
+                        <p><strong>Company:</strong> {{ job.company_name }}</p>
+                        <p><strong>Salary:</strong> ${{ "%.2f"|format(job.salary) }}</p>
+                        <p><strong>Location:</strong> {{ job.location }}</p>
+                        <p><strong>Description:</strong></p>
+                        <p>{{ job.description }}</p>
+                    </div>                    <form method="POST" action="{{ url_for('apply_job', job_id=job._id) }}">
+                        <div class="mb-3">
+                            <label for="cover_letter" class="form-label">Cover Letter (Optional)</label>
+                            <textarea class="form-control" id="cover_letter" name="cover_letter" rows="5" placeholder="Write a cover letter explaining why you're a good fit for this position..."></textarea>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Submit Application</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Application Tips</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">✓ Review the job requirements carefully</li>
+                        <li class="mb-2">✓ Highlight relevant experience in your cover letter</li>
+                        <li class="mb-2">✓ Proofread your application before submitting</li>
+                        <li class="mb-2">✓ Be honest and professional</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

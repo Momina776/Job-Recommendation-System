@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Applications - {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Applications for: {{ job.title }}</h4>
+                </div>
+                <div class="card-body">
+                    {% if applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Email</th>
+                                    <th>Applied Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                <tr>
+                                    <td>{{ application.first_name }} {{ application.last_name }}</td>
+                                    <td>{{ application.email }}</td>
+                                    <td>{{ application.formatted_date }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if application.status == 'accepted' 
+                                            else 'warning' if application.status == 'pending' 
+                                            else 'danger' }}">
+                                            {{ application.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">                                            <button type="button" 
+                                                    class="btn btn-sm btn-success"
+                                                    onclick="updateStatus('{{ application._id }}', 'accepted')"
+                                                    {{ 'disabled' if application.status == 'accepted' }}>
+                                                Accept
+                                            </button>                                            <button type="button" 
+                                                    class="btn btn-sm btn-danger"
+                                                    onclick="updateStatus('{{ application._id }}', 'rejected')"
+                                                    {{ 'disabled' if application.status == 'rejected' }}>
+                                                Reject
+                                            </button>
+                                            <a href="{{ url_for('post_review', reviewee_id=application.job_seeker_id) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                Review
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No applications received yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function updateStatus(applicationId, status) {
+    // Show confirmation dialog
+    if (!confirm(`Are you sure you want to mark this application as ${status}?`)) {
+        return;
+    }
+    
+    // Disable action buttons to prevent double submission
+    const buttons = document.querySelectorAll('button[onclick^="updateStatus"]');
+    buttons.forEach(btn => btn.disabled = true);
+    
+    fetch(`/update-application/${applicationId}/${status}`, {
+        method: 'GET', // Changed to GET to match the backend route
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response;
+    })
+    .then(() => {
+        location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating application status. Please try again.');
+        // Re-enable buttons on error
+        buttons.forEach(btn => btn.disabled = false);
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}
